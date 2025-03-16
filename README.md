@@ -36,7 +36,7 @@ sudo mkdir -p /opt/conjur/install && sudo chown $USER:$USER /opt/conjur/install 
 
 - Baixar o projeto para o Linux:
 ```bash
-noob@k8s:/opt/conjur/install$ sudo git clone https://github.com/adri-costa/ansible-conjur-kubernetes.git .
+sudo git clone https://github.com/adri-costa/ansible-conjur-kubernetes.git .
 ```
 
 - Copiar os binários "conjur-appliance-Rls-v13.4.0.tar.gz" e "conjur-cli-go_8.0.16_amd64.deb" para o diretório:
