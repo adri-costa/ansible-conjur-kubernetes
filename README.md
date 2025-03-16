@@ -24,22 +24,27 @@ Esse projeto é uma automação em Ansible para instalar o ambiente do Conjur En
 ## Configurando o projeto
 
 ### Estando com o Linux instalado (no meu cenário utilizei o Ubuntu 24.10), execute os seguintes comandos:
-Atualizar os pacotes do Linux e instalar o Ansible:
+- Atualizar os pacotes do Linux e instalar o Ansible:
 ```bash
 sudo apt update && sudo apt install ansible -y
 ```
 
-Criar o diretório de instalação, dar permissão para o usuário atual e ir para o diretório criado:
+- Criar o diretório de instalação, dar permissão para o usuário atual e ir para o diretório criado:
 ```bash
 sudo mkdir -p /opt/conjur/install && sudo chown $USER:$USER /opt/conjur/install && cd /opt/conjur/install
 ```
 
-Baixar o projeto para o Linux:
+- Baixar o projeto para o Linux:
 ```bash
 sudo git clone https://github.com/adri-costa/ansible-k3s-conjur-enterprise-13.4.git
 ```
 
-Executar o playbook para instalação e configuração do ambiente (será necessário inserir a senha do usuário após o comando):
+- Copiar os binários "conjur-appliance-Rls-v13.4.0.tar.gz" e "conjur-cli-go_8.0.16_amd64.deb" para o diretório:
+```bash
+/opt/conjur/install
+```
+
+- Executar o playbook para instalação e configuração do ambiente (será necessário inserir a senha do usuário após o comando):
 ```bash
 ansible-playbook -i inventory.yml playbook.yml -K
 ```
