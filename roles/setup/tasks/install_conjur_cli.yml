@@ -1,0 +1,10 @@
+- name: Verificar se o Conjur CLI já está instalado
+  command: conjur --version
+  register: conjur_cli_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Instalar o Conjur CLI se não estiver presente
+  apt:
+    deb: /opt/conjur/install/conjur-cli-go_8.0.16_amd64.deb
+  when: conjur_cli_installed.rc != 0

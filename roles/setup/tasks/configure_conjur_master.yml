@@ -1,0 +1,40 @@
+- name: Aguardar o pod do Conjur ficar pronto antes de continuar
+  shell: |
+    kubectl wait --namespace=conjur \
+    --for=condition=ready pod \
+    --selector=app=conjur-master \
+    --timeout=15s
+  register: wait_conjur_pod
+  retries: 1
+  delay: 10
+  until: wait_conjur_pod.rc == 0
+  become: true
+
+- name: Verificar se o Conjur já está configurado como Master
+  shell: >
+    kubectl exec -n conjur $(kubectl get pod -n conjur -o jsonpath='{.items[0].metadata.name}')
+    -- evoke role
+  register: conjur_role
+  ignore_errors: true
+  changed_when: false
+  become: true
+
+- name: Exibir status atual do Conjur
+  debug:
+    msg: "O Conjur está configurado como: {{ conjur_role.stdout }}"
+  when: conjur_role.stdout is defined and conjur_role.stdout | length > 0
+
+- name: Configurar o Conjur como Master (aceitando EULA)
+  shell: >
+    kubectl exec -n conjur $(kubectl get pod -n conjur -l app=conjur-master -o jsonpath="{.items[0].metadata.name}")
+    -- evoke configure master --accept-eula -h conjur-master -p "{{ conjur_admin_password }}" "{{ conjur_account }}"
+  become: true
+  when: "'master' not in conjur_role.stdout"
+
+- name: Verificar se o Conjur foi configurado corretamente
+  shell: >
+    kubectl exec -n conjur $(kubectl get pod -n conjur -o jsonpath='{.items[0].metadata.name}')
+    -- evoke role
+  register: conjur_role_after
+  failed_when: "'master' not in conjur_role_after.stdout"
+  become: true

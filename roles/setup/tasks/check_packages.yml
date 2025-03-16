@@ -1,0 +1,43 @@
+- name: Verificar pacotes já instalados
+  shell: "dpkg-query -W -f='${Status} ${Version}\n' {{ item }} 2>/dev/null || echo 'not installed'"
+  loop:
+    - ansible
+    - curl
+    - git
+    - docker.io
+    - openssl
+    - k3s
+    - unzip
+  register: package_status
+  changed_when: false
+
+- name: Obter versão mais recente dos pacotes
+  shell: "apt-cache policy {{ item }} | grep Candidate | awk '{print $2}'"
+  loop:
+    - ansible
+    - curl
+    - git
+    - docker.io
+    - openssl
+    - k3s
+    - unzip
+  register: latest_versions
+  changed_when: false
+
+- name: Filtrar pacotes que precisam ser atualizados
+  set_fact:
+    packages_to_install: >-
+      {{
+        packages_to_install | default([]) +
+        [ item.item ] if (item.stdout == 'not installed' or item.stdout.split()[2] != latest_versions.results[loop.index].stdout) else packages_to_install
+      }}
+  loop: "{{ package_status.results }}"
+  loop_control:
+    index_var: loop_index
+
+- name: Instalar pacotes ausentes ou desatualizados
+  apt:
+    name: "{{ packages_to_install }}"
+    state: latest
+    update_cache: yes
+  when: packages_to_install | length > 0

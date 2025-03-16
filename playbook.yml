@@ -1,0 +1,16 @@
+- name: Configurar Conjur Enterprise 13.4 no K3s
+  hosts: localhost
+#  hosts: conjur_server #host remoto
+  become: true
+  roles:
+    - setup
+
+  tasks:
+    - import_tasks: roles/setup/tasks/setup_directories.yml
+    - import_tasks: roles/setup/tasks/install_k3s.yml
+    - import_tasks: roles/setup/tasks/setup_docker.yml
+    - import_tasks: roles/setup/tasks/load_conjur_image.yml
+    - import_tasks: roles/setup/tasks/deploy_conjur_k3s.yml
+    - import_tasks: roles/setup/tasks/configure_conjur_master.yml
+    - import_tasks: roles/setup/tasks/install_conjur_cli.yml
+    - import_tasks: roles/setup/tasks/validate_conjur_installation.yml

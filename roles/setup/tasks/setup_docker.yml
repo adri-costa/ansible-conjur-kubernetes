@@ -1,0 +1,24 @@
+- name: Verificar se o Docker já está instalado
+  command: docker --version
+  register: docker_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Instalar Docker se não estiver presente
+  apt:
+    name: docker.io
+    state: latest
+    update_cache: yes
+  when: docker_installed.rc != 0
+
+- name: Adicionar usuário ao grupo Docker
+  user:
+    name: "{{ ansible_env.USER }}"  # Substituímos 'ansible_user' por 'ansible_env.USER'
+    groups: docker
+    append: yes
+
+- name: Habilitar e iniciar o serviço do Docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started

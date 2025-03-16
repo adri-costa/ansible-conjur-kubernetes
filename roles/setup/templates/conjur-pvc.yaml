@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conjur-pv-claim
+  namespace: conjur
+spec:
+  storageClassName: local-path  # necessário para K3s
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

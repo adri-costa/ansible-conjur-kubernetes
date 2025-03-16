@@ -1,0 +1,36 @@
+- name: Verificar se o K3s já está instalado
+  command: k3s --version
+  register: k3s_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Instalar o K3s se não estiver presente
+  shell: "curl -sfL https://get.k3s.io | sh -"
+  when: k3s_installed.rc != 0
+
+- name: Habilitar e iniciar o serviço do K3s
+  systemd:
+    name: k3s
+    enabled: yes
+    state: started
+
+- name: Ajustar permissões para kubectl (k3s)
+  become: true
+  file:
+    path: /etc/rancher/k3s/k3s.yaml
+    mode: '0644'
+
+- name: Criar pasta ~/.kube
+  file:
+    path: ~/.kube
+    state: directory
+
+- name: Copiar configuração do K3s para usuário local
+  become: true
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~/.kube/config
+    remote_src: yes
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    mode: '0644'

@@ -1,0 +1,19 @@
+- name: Remover qualquer pod com erro antes de recriar
+  shell: "sudo kubectl delete pod -n conjur --ignore-not-found=true --selector=app=conjur-master"
+  become: true
+
+- name: Criar namespace do Conjur
+  shell: "sudo kubectl apply -f roles/setup/templates/conjur-namespace.yaml"
+  become: true
+
+- name: Criar volume persistente para o Conjur
+  shell: "sudo kubectl apply -f roles/setup/templates/conjur-pvc.yaml"
+  become: true
+
+- name: Criar deployment do Conjur
+  shell: "sudo kubectl apply -f roles/setup/templates/conjur-deployment.yaml"
+  become: true
+
+- name: Criar service para expor o Conjur via NodePort
+  shell: "sudo kubectl apply -f roles/setup/templates/conjur-service.yaml"
+  become: true

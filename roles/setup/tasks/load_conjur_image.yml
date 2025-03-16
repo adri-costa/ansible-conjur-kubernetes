@@ -1,0 +1,29 @@
+- name: Verificar se a imagem Conjur já está carregada no Docker
+  shell: "docker images -q docker.io/library/conjur-appliance:13.4"
+  register: conjur_docker_image_present
+  changed_when: false
+  become: true
+
+- name: Carregar imagem Conjur original no Docker (se não presente)
+  shell: "docker load -i /opt/conjur/install/conjur-appliance-Rls-v13.4.0.tar.gz"
+  when: conjur_docker_image_present.stdout == ""
+  become: true
+
+- name: Corrigir tag da imagem do Docker imediatamente após o load
+  shell: "docker tag registry.tld/conjur-appliance:13.4.0 docker.io/library/conjur-appliance:13.4"
+  become: true
+
+- name: Exportar imagem Docker para K3s
+  shell: "docker save docker.io/library/conjur-appliance:13.4 -o /opt/conjur/install/conjur-appliance.tar"
+  become: true
+
+- name: Verificar se a imagem já está importada no K3s
+  shell: "sudo k3s ctr images list | grep docker.io/library/conjur-appliance:13.4 || true"
+  register: conjur_k3s_image
+  changed_when: false
+  become: true
+
+- name: Importar imagem Docker para o runtime do K3s (se não presente)
+  shell: "sudo k3s ctr images import /opt/conjur/install/conjur-appliance.tar"
+  when: conjur_k3s_image.stdout == ""
+  become: true
