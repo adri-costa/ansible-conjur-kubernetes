@@ -1,0 +1,35 @@
+- name: Configurar variáveis de ambiente do Conjur
+  lineinfile:
+    path: /etc/environment
+    line: "{{ item }}"
+    state: present
+  loop:
+    - 'CONJUR_ACCOUNT=projeto-conjur'
+    - 'CONJUR_APPLIANCE_URL=https://localhost:30443'
+    - 'CONJUR_AUTHN_LOGIN=admin'
+    - 'CONJUR_SSL_NO_VERIFY=true'
+
+- name: Criar arquivo ~/.netrc para autenticação no Conjur CLI
+  copy:
+    dest: ~/.netrc
+    content: |
+      machine localhost
+      login admin
+      password {{ conjur_admin_password }}
+    owner: "{{ ansible_env.USER }}"
+    mode: '0600'
+
+- name: Adicionar entrada no /etc/hosts para Conjur
+  lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1 conjur-master"
+    state: present
+
+- name: Extrair certificado SSL do Conjur
+  shell: |
+    openssl s_client -connect localhost:30443 -showcerts </dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > /usr/local/share/ca-certificates/conjur.crt
+  args:
+    creates: /usr/local/share/ca-certificates/conjur.crt
+
+- name: Atualizar certificados do sistema
+  command: update-ca-certificates

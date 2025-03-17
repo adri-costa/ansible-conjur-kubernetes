@@ -1,6 +1,5 @@
 - name: Configurar Conjur Enterprise 13.4 no K3s
   hosts: localhost
-#  hosts: conjur_server #host remoto
   become: true
   roles:
     - setup
@@ -14,3 +13,4 @@
     - import_tasks: roles/setup/tasks/configure_conjur_master.yml
     - import_tasks: roles/setup/tasks/install_conjur_cli.yml
     - import_tasks: roles/setup/tasks/validate_conjur_installation.yml
+    - import_tasks: roles/setup/tasks/configure_environment.yml

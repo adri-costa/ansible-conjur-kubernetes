@@ -1,2 +1,3 @@
 conjur_admin_password: "SenhaForte@123"
 conjur_account: "projeto-conjur"
+conjur_appliance_url: "https://localhost:30443"

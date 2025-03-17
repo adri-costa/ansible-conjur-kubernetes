@@ -1,0 +1,2 @@
+- name: Reload environment variables
+  shell: bash -c 'source /etc/profile.d/conjur.sh'

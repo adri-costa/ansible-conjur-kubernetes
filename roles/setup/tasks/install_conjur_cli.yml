@@ -8,3 +8,12 @@
   apt:
     deb: /opt/conjur/install/conjur-cli-go_8.0.16_amd64.deb
   when: conjur_cli_installed.rc != 0
+
+- name: Validar a instalação do Conjur CLI
+  command: conjur --version
+  register: conjur_cli_version
+  changed_when: false
+
+- name: Exibir versão instalada do Conjur CLI
+  debug:
+    msg: "Conjur CLI versão instalada: {{ conjur_cli_version.stdout }}"

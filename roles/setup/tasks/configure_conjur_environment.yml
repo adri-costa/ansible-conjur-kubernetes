@@ -1,0 +1,37 @@
+- name: Definir variáveis de ambiente globalmente em /etc/environment
+  lineinfile:
+    path: "/etc/environment"
+    state: present
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+  with_items: "{{ conjur_environment }}"
+  become: yes
+  tags: configure_env
+
+- name: Criar script de inicialização para garantir carregamento automático das variáveis
+  copy:
+    dest: /etc/profile.d/conjur_env.sh
+    content: |
+      {% for item in conjur_environment %}
+      export {{ item.key }}={{ item.value }}
+      {% endfor %}
+    mode: '0755'
+    owner: root
+    group: root
+  become: yes
+  tags: configure_env
+
+- name: Carregar variáveis do /etc/environment na sessão atual
+  shell: "export $(grep CONJUR /etc/environment | xargs)"
+  args:
+    executable: /bin/bash
+  changed_when: false
+  tags: configure_env
+
+- name: Garantir que o script será carregado no /etc/profile
+  lineinfile:
+    path: /etc/profile
+    state: present
+    line: "source /etc/profile.d/conjur_env.sh"
+  become: yes
+  tags: configure_env
