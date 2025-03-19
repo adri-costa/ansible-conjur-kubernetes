@@ -41,4 +41,3 @@
     state: latest
     update_cache: yes
   when: packages_to_install | length > 0
-  

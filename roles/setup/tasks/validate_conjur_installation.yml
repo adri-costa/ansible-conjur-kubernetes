@@ -1,3 +1,9 @@
+- name: Verificar se o pod do Conjur está rodando
+  shell: "kubectl get pods -n conjur -l app=conjur-master -o jsonpath='{.items[0].status.phase}'"
+  register: conjur_pod_status
+  failed_when: conjur_pod_status.stdout != "Running"
+  changed_when: false
+
 - name: Testar a API do Conjur via curl
   shell: "curl -k https://$(kubectl get svc conjur-service -n conjur -o jsonpath='{.spec.clusterIP}'):443/health"
   register: conjur_api_response
@@ -12,13 +18,3 @@
   register: conjur_role_check
   failed_when: "'master' not in conjur_role_check.stdout"
   changed_when: false
-
-- name: Testar autenticação no Conjur
-  shell: "conjur whoami"
-  register: conjur_auth_test
-  ignore_errors: true
-  changed_when: false
-
-- name: Exibir resultado do teste de autenticação
-  debug:
-    msg: "Autenticação no Conjur: {{ conjur_auth_test.stdout if conjur_auth_test.stdout else 'Falha ao autenticar' }}"
