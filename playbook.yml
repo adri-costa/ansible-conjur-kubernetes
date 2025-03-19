@@ -1,6 +1,30 @@
 - name: Configurar Conjur Enterprise 13.4 no K3s
   hosts: localhost
   become: true
+
+  tasks:
+    - name: Atualizar pacotes e instalar o Ansible
+      apt:
+        name: ansible
+        state: present
+        update_cache: yes
+
+    - name: Criar diretório de instalação do Conjur
+      file:
+        path: /opt/conjur/install
+        state: directory
+        owner: "{{ ansible_env.USER }}"
+        group: "{{ ansible_env.USER }}"
+        mode: '0755'
+
+    - name: Clonar repositório Ansible para configuração do Conjur
+      git:
+        repo: "https://github.com/adri-costa/ansible-conjur-kubernetes.git"
+        dest: /opt/conjur/install
+        clone: yes
+        update: yes
+        force: yes
+
   roles:
     - setup
 
