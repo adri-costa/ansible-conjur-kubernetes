@@ -26,3 +26,30 @@ spec:
             requests:
               memory: "512Mi"
               cpu: "500m"
+          volumeMounts:
+            - name: conjur-storage
+              mountPath: /opt/conjur/data
+            - name: conjur-config
+              mountPath: /var/lib/conjur
+            - name: conjur-ssl
+              mountPath: /etc/conjur/ssl
+            - name: conjur-logs
+              mountPath: /var/log/conjur
+            - name: conjur-nginx
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: conjur-storage
+          persistentVolumeClaim:
+            claimName: conjur-pv-claim
+        - name: conjur-config
+          persistentVolumeClaim:
+            claimName: conjur-config-pv-claim
+        - name: conjur-ssl
+          persistentVolumeClaim:
+            claimName: conjur-ssl-pv-claim
+        - name: conjur-logs
+          persistentVolumeClaim:
+            claimName: conjur-logs-pv-claim
+        - name: conjur-nginx
+          persistentVolumeClaim:
+            claimName: conjur-nginx-pv-claim

@@ -1,12 +1,143 @@
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conjur-pv
+  namespace: conjur
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/conjur/persistent-data"
+
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: conjur-pv-claim
   namespace: conjur
 spec:
-  storageClassName: local-path  # necessário para K3s
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
+  volumeName: conjur-pv
+  storageClassName: ""
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conjur-config-pv
+  namespace: conjur
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/conjur/config"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conjur-config-pv-claim
+  namespace: conjur
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: conjur-config-pv
+  storageClassName: ""
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conjur-ssl-pv
+  namespace: conjur
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/conjur/ssl"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conjur-ssl-pv-claim
+  namespace: conjur
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: conjur-ssl-pv
+  storageClassName: ""
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conjur-logs-pv
+  namespace: conjur
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/conjur/logs"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conjur-logs-pv-claim
+  namespace: conjur
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: conjur-logs-pv
+  storageClassName: ""
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conjur-nginx-pv
+  namespace: conjur
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/opt/conjur/nginx"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: conjur-nginx-pv-claim
+  namespace: conjur
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: conjur-nginx-pv
+  storageClassName: ""

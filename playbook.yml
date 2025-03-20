@@ -1,6 +1,5 @@
 - name: Configurar Conjur Enterprise 13.4 no K3s
   hosts: localhost
-#  hosts: conjur_server #host remoto
   become: true
   roles:
     - setup
@@ -11,7 +10,7 @@
         name: ansible
         state: present
         update_cache: yes
-        
+
     - import_tasks: roles/setup/tasks/setup_directories.yml
     - import_tasks: roles/setup/tasks/install_k3s.yml
     - import_tasks: roles/setup/tasks/setup_docker.yml
@@ -20,3 +19,57 @@
     - import_tasks: roles/setup/tasks/configure_conjur_master.yml
     - import_tasks: roles/setup/tasks/install_conjur_cli.yml
     - import_tasks: roles/setup/tasks/validate_conjur_installation.yml
+
+    - name: Garantir que os serviços essenciais estejam rodando após reinicialização
+      systemd:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      loop:
+        - docker
+        - k3s
+
+    - name: Verificar se o Conjur está rodando
+      shell: |
+        kubectl get pods -n conjur -l app=conjur-master -o jsonpath="{.items[0].status.phase}"
+      register: conjur_pod_status
+      changed_when: false
+
+    - name: Reiniciar pod do Conjur se não estiver rodando
+      shell: |
+        kubectl delete pod -n conjur --selector=app=conjur-master
+      when: conjur_pod_status.stdout != "Running"
+      become: true
+
+    - name: Aguardar o Conjur iniciar após reinicialização
+      shell: |
+        kubectl wait --namespace=conjur \
+        --for=condition=ready pod \
+        --selector=app=conjur-master \
+        --timeout=60s
+      register: wait_conjur_pod
+      retries: 3
+      delay: 20
+      until: wait_conjur_pod.rc == 0
+      become: true
+
+    - name: Verificar se o Conjur já está configurado como Master
+      shell: >
+        kubectl exec -n conjur $(kubectl get pod -n conjur -o jsonpath='{.items[0].metadata.name}')
+        -- evoke role
+      register: conjur_role
+      ignore_errors: true
+      changed_when: false
+      become: true
+
+    - name: Exibir status atual do Conjur
+      debug:
+        msg: "O Conjur está configurado como: {{ conjur_role.stdout }}"
+      when: conjur_role.stdout is defined and conjur_role.stdout | length > 0
+
+    - name: Configurar o Conjur como Master (se necessário)
+      shell: >
+        kubectl exec -n conjur $(kubectl get pod -n conjur -l app=conjur-master -o jsonpath="{.items[0].metadata.name}")
+        -- evoke configure master --accept-eula -h conjur-master -p "{{ conjur_admin_password }}" "{{ conjur_account }}"
+      become: true
+      when: "'master' not in conjur_role.stdout"
