@@ -31,7 +31,7 @@ sudo apt update && sudo apt install ansible -y
 
 - Criar o diretório de instalação, dar permissão para o usuário atual e ir para o diretório criado:
 ```bash
-sudo mkdir -p /opt/conjur/install && sudo chown $USER:$USER /opt/conjur/install && cd /opt/conjur/install
+sudo mkdir -p /opt/conjur/install && sudo chown -R $USER:$USER /opt/conjur/install && cd /opt/conjur/install
 ```
 
 - Baixar o projeto para o Linux:
